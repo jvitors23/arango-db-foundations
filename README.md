@@ -34,7 +34,7 @@ Airports:
 
 ```shell
 arangoimport --server.endpoint http://localhost:8529 \
- --create-collection true --create-collection-type document --file 'airports.json' \
+ --create-collection true --create-collection-type document --file 'data/airports.json' \
  --collection airports --server.database _system \
  --server.username root --server.password pass
 ```
@@ -44,7 +44,7 @@ Flights:
 ```shell
 arangoimport --server.endpoint http://localhost:8529 \
  --create-collection true --create-collection-type edge \
- --file 'flights.json' --collection flights \
+ --file 'data/flights.json' --collection flights \
  --server.database _system --server.username root \
  --server.password pass --batch-size 100000000
 ```

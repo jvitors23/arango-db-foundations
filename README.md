@@ -49,3 +49,115 @@ arangoimport --server.endpoint http://localhost:8529 \
  --server.password pass --batch-size 100000000
 ```
 
+## Arango Query Language (AQL)
+
+### Single Document Lookup
+
+```aql
+RETURN DOCUMENT("airports/JFK")
+```
+
+### Filtering & Primary Key
+
+```aql
+FOR airport IN airports
+    FILTER airport._key == "JFK"
+    RETURN airport
+```
+
+### Operators
+
+#### AND
+
+```aql 
+FOR airport IN airports   
+  FILTER airport.city == "New York"      
+  AND airport.state == "NY"   
+  RETURN airport
+```
+
+#### Sort & Limit
+
+```aql 
+FOR a IN airports   
+  FILTER a.vip   
+  SORT a.state, a.name DESC   
+  LIMIT 5   
+  RETURN a
+```
+
+#### RETURN
+
+You don’t have to RETURN full documents, you can also return just parts of them 
+(see the KEEP() and UNSET() functions for instance) or construct the 
+query result as you desire.
+
+```aql
+FOR a IN airports   
+  FILTER a._key IN ["JFK", "LAX"]
+  RETURN { name: a.name}
+```
+
+#### LENGTH
+
+```aql
+RETURN {airportsCount: LENGTH(airports)}
+```
+
+#### Graph Traversal
+
+Sintax:
+
+```aql
+FOR vertex[, edge[, path]]
+  IN [min[..max]]
+  OUTBOUND|INBOUND|ANY startVertex
+  edgeCollection[, more…]
+```
+
+Example: Return the names of all airports one can reach directly (1 step) from Los Angeles International (LAX) following the flights edges:
+
+```aql
+WITH airports
+FOR airport IN 1..1 
+  OUTBOUND
+  'airports/LAX' flights
+  RETURN DISTINCT airport.name
+```
+
+Example: Return any 10 flight documents with the flight departing from LAX and the destination airport documents. 
+
+```aql
+WITH airports
+FOR airport, flight IN 
+  OUTBOUND 
+  'airports/LAX' flights
+  LIMIT 10
+  RETURN {airport, flight}
+```
+
+Example: Return 10 flight numbers with the plane landing at Bismarck Municipal Airport (BIS).
+
+```aql
+WITH airports
+FOR airport, flight IN 
+INBOUND
+'airports/BIS' flights
+  LIMIT 10
+  RETURN flight.FlightNum
+```
+
+Example:Find all connections which depart from or land at BIS on January 5th and 7th and return to the destination city and the arrival time in universal time (UTC).
+
+```aql
+WITH airports
+FOR airport, flight IN ANY 
+'airports/BIS' flights
+  FILTER flight.Month == 1
+     AND flight.Day >= 5
+     AND flight.Day <= 7
+  RETURN { city: airport.city,
+           time: flight.ArrTimeUTC }
+```
+
+
